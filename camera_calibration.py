@@ -1,53 +1,133 @@
-import cv2
+# https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html
 import numpy as np
-import os
+import cv2 as cv
 import glob
-# 체커보드의 차원 정의
-CHECKERBOARD = (6,9) # 체커보드 행과 열당 내부 코너 수
-criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-# 각 체커보드 이미지에 대한 3D 점 벡터를 저장할 벡터 생성
-objpoints = []
-# 각 체커보드 이미지에 대한 2D 점 벡터를 저장할 벡터 생성
-imgpoints = [] 
-# 3D 점의 세계 좌표 정의
-objp = np.zeros((1, CHECKERBOARD[0] * CHECKERBOARD[1], 3), np.float32)
-objp[0,:,:2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2)
-prev_img_shape = None
-# 주어진 디렉터리에 저장된 개별 이미지의 경로 추출
-images = glob.glob('./images/*.jpg')
-for fname in images:
-    img = cv2.imread(fname)
-    # 그레이 스케일로 변환
-    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-    # 체커보드 코너 찾기
-    # 이미지에서 원하는 개수의 코너가 발견되면 ret = true
-    ret, corners = cv2.findChessboardCorners(gray,
-                                             CHECKERBOARD,
-                                             cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_FAST_CHECK + cv2.CALIB_CB_NORMALIZE_IMAGE)
-    # 원하는 개수의 코너가 감지되면,
-    # 픽셀 좌표 미세조정 -> 체커보드 이미지 표시
-    if ret == True:
-        objpoints.append(objp)
-        # 주어진 2D 점에 대한 픽셀 좌표 미세조정
-        corners2 = cv2.cornerSubPix(gray, corners, (11,11),(-1,-1), criteria)
-        imgpoints.append(corners2)
-        # 코너 그리기 및 표시
-        img = cv2.drawChessboardCorners(img, CHECKERBOARD, corners2, ret)
-    cv2.imshow('img',img)
-    cv2.waitKey(0)
-cv2.destroyAllWindows()
-h,w = img.shape[:2] # 480, 640
-# 알려진 3D 점(objpoints) 값과 감지된 코너의 해당 픽셀 좌표(imgpoints) 전달, 카메라 캘리브레이션 수행
-ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
-print("Camera matrix : \n") # 내부 카메라 행렬
-print(mtx)
+def fileWrite():
+    f = open("C:/Users/joooo/Desktop/images/보정결과.txt", 'w')
+    data = "ret\n"
+    f.write(data)
+    data = str(ret)
+    f.write(data)
 
-print("dist : \n") # 렌즈 왜곡 계수(Lens distortion coefficients)
-print(dist)
+    data = "\n\ncameraMatrix\n"
+    f.write(data)
+    data = str(mtx)
+    f.write(data)
 
-print("rvecs : \n") # 회전 벡터
-print(rvecs)
+    data = "\n\ndistCoeffs\n"
+    f.write(data)
+    data = str(dist)
+    f.write(data)
 
-print("tvecs : \n") # 이동 벡터
-print(tvecs)
+    data = "\n\nrvecs\n"
+    f.write(data)
+    data = str(rvecs)
+    f.write(data)
+
+    data = "\n\ntvecs\n"
+    f.write(data)
+    data = str(tvecs)
+    f.write(data)
+
+    data = "\n\ntotal error\n"
+    f.write(data)
+    data = str(mean_error / len(objpoints))
+    f.write(data)
+
+    f.close()
+
+
+def printCameraCalibration():
+    print("ret")
+    print(ret)
+
+    print("mtx")
+    print(mtx)
+
+    print("distCoeffs")
+    print(dist)
+
+    print("rvecs") # 회전벡터
+    print(rvecs)
+
+    print("tvecs") # 이동벡터
+    print(tvecs)
+
+
+# termination criteria
+criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+
+# prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
+objp = np.zeros((4*6,3), np.float32)
+objp[:,:2] = np.mgrid[0:4,0:6].T.reshape(-1,2)
+
+# Arrays to store object points and image points from all the images.
+objpoints = [] # 3d point in real world space
+imgpoints = [] # 2d points in image plane.
+
+# images = glob.glob('C:/Users/joooo/Desktop/images/*.jpg')
+# for fname in images:
+img = cv.imread('C:/Users/joooo/Desktop/images/20.jpg')
+gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+
+# Find the chess board corners
+ret, corners = cv.findChessboardCorners(gray, (4, 6), None)
+
+# If found, add object points, image points (after refining them)
+if ret == True:
+    objpoints.append(objp)
+    corners2 = cv.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
+    imgpoints.append(corners2)
+
+"""
+# Draw and display the corners
+cv.drawChessboardCorners(img, (4,6), corners2, ret)
+img2 = cv.resize(img, (1000,1000))
+
+cv.imshow('img', img2)
+cv.waitKey(0)
+cv.destroyAllWindows()
+"""
+
+# camera calibration
+ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+printCameraCalibration()
+
+
+# undistortion
+h, w = img.shape[:2]
+newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
+
+# undistort
+dst = cv.undistort(img, mtx, dist, None, newcameramtx)
+x, y, w, h = roi
+dst = dst[y:y + h, x:x + w]
+cv.imwrite('C:/Users/joooo/Desktop/images/calibresult2.jpg', dst)
+
+# 원래영상 화면에 띄우기
+img1 = cv.resize(img, (500,500))
+cv.imshow('original', img1)
+
+# 보정영상 화면에 띄우기
+img2 = cv.resize(dst, (500,500))
+
+cv.imshow('calibrated', img2)
+cv.waitKey(0)
+cv.destroyAllWindows()
+
+# reprojection error
+mean_error = 0
+for i in range(len(objpoints)):
+    imgpoints2, _ = cv.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
+    error = cv.norm(imgpoints[i], imgpoints2, cv.NORM_L2) / len(imgpoints2)
+    mean_error += error
+print("total error: {}".format(mean_error / len(objpoints)))
+
+fileWrite()
+
+
+
+
+
+
