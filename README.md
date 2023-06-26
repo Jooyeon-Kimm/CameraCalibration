@@ -5,6 +5,8 @@
 
 ![과제2_제출물(2)](https://user-images.githubusercontent.com/71128321/231549089-957bef5a-5dd5-478a-ad39-baeec78a957e.png)
 
+
+
 # Template Matching
 템플릿 매칭
 
@@ -15,9 +17,16 @@ template matching 은 normalized cross correlation (NCC)을 이용한다.
 ![template_matching_pen](https://user-images.githubusercontent.com/71128321/236149945-a66b0f41-10c9-4881-b31d-be2f53d486e1.jpg)
 
 
+
+
+
 # Image Alignment
 영상 3개로 파노라마 사진 만들기
 ![image_alignment](https://github.com/Jooyeon-Kimm/Computer-Vision/assets/71128321/2b4c88e8-c0cd-4963-9269-df6ab357de18)
+
+
+
+
 
 # Stereo Matching
 ![Stereo Matching](https://github.com/Jooyeon-Kimm/kotlinpractice/assets/71128321/fabd8d4b-5846-46f5-8d17-72249a66666e)
