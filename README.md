@@ -18,3 +18,6 @@ template matching 은 normalized cross correlation (NCC)을 이용한다.
 # Image Alignment
 영상 3개로 파노라마 사진 만들기
 ![image_alignment](https://github.com/Jooyeon-Kimm/Computer-Vision/assets/71128321/2b4c88e8-c0cd-4963-9269-df6ab357de18)
+
+# Stereo Matching
+![Stereo Matching](https://github.com/Jooyeon-Kimm/kotlinpractice/assets/71128321/fabd8d4b-5846-46f5-8d17-72249a66666e)
